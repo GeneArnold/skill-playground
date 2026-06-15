@@ -10,7 +10,7 @@ editing real skills and watching the trace change.
 
 ## What you can do
 
-- **Chat** with Claude (Anthropic) or Grok (xAI) — and DeepSeek if you add a key.
+- **Chat** with Claude (Anthropic), Groq, DeepSeek — or **local models via Ollama, fully offline**.
 - **Toggle skills** per chat via checkboxes. Active skills become tools the model can call.
 - **Watch skills light up** the instant the model calls them, with the script glowing while it runs.
 - **Read the full trace** of every turn: reasoning → tool call (exact args) → script stdin/stdout/stderr/exit → result → final answer.
@@ -33,6 +33,20 @@ Add a key to `backend/.env`:
 - `DEEPSEEK_API_KEY` — DeepSeek (optional)
 
 Only models whose key is present show up in the picker.
+
+### Offline with Ollama (no key, no internet)
+
+Install [Ollama](https://ollama.com) and pull a tool-capable model:
+
+```bash
+ollama pull qwen2.5:7b      # best all-rounder
+ollama pull llama3.2        # tiny & fast
+```
+
+As long as the Ollama server is running, its models appear in the picker
+automatically — no API key, works on a plane. (Gemma models are skipped: they
+don't support tool calling, which the playground needs.) Configure via
+`OLLAMA_ENABLED` / `OLLAMA_BASE_URL` in `.env`.
 
 ## Run
 

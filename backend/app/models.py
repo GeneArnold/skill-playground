@@ -19,6 +19,7 @@ class ModelInfo:
     # For openai_compat providers we also need a base_url + which key to use.
     base_url: str = ""
     key_env: str = ""
+    local: bool = False  # local (Ollama) — no API key, gated on reachability
 
 
 # The full catalog. Filtered at runtime by available keys.
@@ -92,6 +93,32 @@ _CATALOG = [
         base_url="https://api.deepseek.com",
         key_env="DEEPSEEK_API_KEY",
     ),
+    # --- Ollama (local, offline) — only tool-capable models. base_url is filled
+    # from config at availability time so OLLAMA_BASE_URL is respected.
+    ModelInfo(
+        id="qwen2.5:7b",
+        label="Qwen2.5 7B (local)",
+        provider="openai_compat",
+        tier="smart",
+        exposes_thinking=False,
+        local=True,
+    ),
+    ModelInfo(
+        id="llama3.2:latest",
+        label="Llama 3.2 (local, tiny & fast)",
+        provider="openai_compat",
+        tier="budget",
+        exposes_thinking=False,
+        local=True,
+    ),
+    ModelInfo(
+        id="gpt-oss:20b",
+        label="GPT-OSS 20B (local, reasoning)",
+        provider="openai_compat",
+        tier="smart",
+        exposes_thinking=True,
+        local=True,
+    ),
 ]
 
 
@@ -101,13 +128,40 @@ def _key_for(model: ModelInfo) -> str:
     return getattr(config, model.key_env, "")
 
 
+def _hydrate(model: ModelInfo) -> ModelInfo:
+    """Local models get their base_url from config at lookup time."""
+    if model.local and not model.base_url:
+        model.base_url = config.OLLAMA_BASE_URL
+    return model
+
+
+def _ollama_reachable() -> bool:
+    if not config.OLLAMA_ENABLED:
+        return False
+    try:
+        import httpx
+        httpx.get(f"{config.OLLAMA_BASE_URL}/models", timeout=0.6).raise_for_status()
+        return True
+    except Exception:  # noqa: BLE001 — server not running / not reachable
+        return False
+
+
 def available_models() -> list[ModelInfo]:
-    """Return only the models we have a key for."""
-    return [m for m in _CATALOG if _key_for(m)]
+    """Models we can actually use: cloud models with a key, plus local (Ollama)
+    models when the Ollama server is reachable."""
+    ollama_up = _ollama_reachable()
+    out = []
+    for m in _CATALOG:
+        if m.local:
+            if ollama_up:
+                out.append(_hydrate(m))
+        elif _key_for(m):
+            out.append(m)
+    return out
 
 
 def get_model(model_id: str) -> ModelInfo | None:
     for m in _CATALOG:
         if m.id == model_id:
-            return m
+            return _hydrate(m)
     return None

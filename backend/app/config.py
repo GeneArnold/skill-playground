@@ -13,6 +13,10 @@ XAI_API_KEY = os.getenv("XAI_API_KEY", "").strip()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "").strip()
 
+# Ollama — local models, no API key. Great for offline use.
+OLLAMA_ENABLED = os.getenv("OLLAMA_ENABLED", "true").lower() not in ("0", "false", "no")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1").strip()
+
 SKILLS_DIR = (_BACKEND_DIR / os.getenv("SKILLS_DIR", "../skills")).resolve()
 SCRIPT_TIMEOUT_SECONDS = int(os.getenv("SCRIPT_TIMEOUT_SECONDS", "10"))
 

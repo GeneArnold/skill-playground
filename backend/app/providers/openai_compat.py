@@ -39,7 +39,8 @@ def _parse_failed_generation(text: str) -> list[tuple[str, dict]]:
 class OpenAICompatSession(Session):
     def __init__(self, model, system):
         super().__init__(model, system)
-        self.api_key = getattr(config, model.key_env, "")
+        # Local (Ollama) needs no real key; send a placeholder so the header is valid.
+        self.api_key = "ollama" if getattr(model, "local", False) else getattr(config, model.key_env, "")
         self.base_url = model.base_url.rstrip("/")
         self.messages: list[dict] = []
         if system:
