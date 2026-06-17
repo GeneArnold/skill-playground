@@ -87,3 +87,7 @@ export function streamChat(model, enabledSkills, messages, onEvent) {
 export function streamExplain(model, trace, question, onEvent) {
   return streamSSE("/api/explain", { model, trace, question }, onEvent);
 }
+
+export function streamAssist(model, instruction, frontmatter, script, onEvent) {
+  return streamSSE("/api/assist", { model, instruction, frontmatter, script }, onEvent);
+}

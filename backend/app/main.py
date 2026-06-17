@@ -10,7 +10,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from . import config, instructions as instructions_mod, skills as skills_mod
-from .chat import run_chat, run_explain
+from .chat import run_assist, run_chat, run_explain
 from .models import available_models
 
 app = FastAPI(title="Skill Playground")
@@ -66,6 +66,7 @@ def list_models():
         {
             "id": m.id, "label": m.label, "provider": m.provider,
             "tier": m.tier, "exposes_thinking": m.exposes_thinking,
+            "local": m.local,
         }
         for m in available_models()
     ]
@@ -113,6 +114,22 @@ def explain(req: ExplainRequest):
     return StreamingResponse(gen, media_type="text/event-stream", headers=_SSE_HEADERS)
 
 
+class AssistRequest(BaseModel):
+    model: str
+    instruction: str = ""
+    frontmatter: str = ""
+    script: str = ""
+
+
+@app.post("/api/assist")
+def assist(req: AssistRequest):
+    gen = run_assist(
+        model_id=req.model, instruction=req.instruction,
+        frontmatter=req.frontmatter, script=req.script,
+    )
+    return StreamingResponse(gen, media_type="text/event-stream", headers=_SSE_HEADERS)
+
+
 # ---------- skill editing ----------
 _SAFE_FOLDER = re.compile(r"^[A-Za-z0-9_-]+$")
 
@@ -138,14 +155,14 @@ def save_skill(folder: str, body: SkillWrite):
 
     (target / "SKILL.md").write_text(body.skill_md)
 
+    # Only write a script if the frontmatter declares one. A skill with no
+    # `script:` field is instruction-only — there's nothing to write.
     if body.script_source is not None:
         script_name = _script_name_from_md(body.skill_md)
-        if not script_name:
-            raise HTTPException(
-                400, "Could not find a `script:` field in the SKILL.md frontmatter.")
-        if "/" in script_name or "\\" in script_name:
-            raise HTTPException(400, "Script name may not contain path separators.")
-        (target / script_name).write_text(body.script_source)
+        if script_name:
+            if "/" in script_name or "\\" in script_name:
+                raise HTTPException(400, "Script name may not contain path separators.")
+            (target / script_name).write_text(body.script_source)
 
     saved = skills_mod.get_skill_by_folder(folder)
     return saved.to_public() if saved else {"folder": folder}

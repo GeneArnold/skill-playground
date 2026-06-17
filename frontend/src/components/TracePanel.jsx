@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Walkthrough from "./Walkthrough.jsx";
 
 function Json({ value }) {
   return <pre className="json">{JSON.stringify(value, null, 2)}</pre>;
@@ -54,6 +55,11 @@ function ExecutionDetail({ ex }) {
 }
 
 export default function TracePanel({ turn }) {
+  const [walk, setWalk] = useState(false);
+
+  // Leave walkthrough mode whenever the selected turn changes.
+  useEffect(() => setWalk(false), [turn && turn.id]);
+
   if (!turn) {
     return (
       <div className="trace-panel">
@@ -67,6 +73,16 @@ export default function TracePanel({ turn }) {
   }
 
   const events = condense(turn.events);
+  const canWalk = turn.status !== "streaming" && turn.events.length > 0;
+
+  if (walk) {
+    return (
+      <div className="trace-panel">
+        <h2>Walkthrough</h2>
+        <Walkthrough turn={turn} onExit={() => setWalk(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="trace-panel">
@@ -79,6 +95,11 @@ export default function TracePanel({ turn }) {
           </span>
         )}
         <span className={"badge " + turn.status}>{turn.status}</span>
+        {canWalk && (
+          <button className="walk-btn" onClick={() => setWalk(true)}>
+            📖 Walk through
+          </button>
+        )}
       </div>
 
       <ol className="trace-list">

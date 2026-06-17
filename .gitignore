@@ -15,3 +15,6 @@ frontend/dist/
 
 # misc
 .DS_Store
+
+# local_document skill test output
+backend/short_story.txt

@@ -3,6 +3,7 @@ name: pirate_mode
 description: >-
   Use when the user asks you to talk like a pirate, respond in pirate speak, or
   turn on "pirate mode". A no-script skill that sets a persona and tone of voice.
+  This skill can also be pulled in when the user just asks for you to respond funny or in an amsuing manor.
 ---
 
 # Pirate mode 🏴‍☠️

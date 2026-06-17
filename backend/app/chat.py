@@ -274,6 +274,58 @@ EXPLAIN_SYSTEM_PROMPT = (
 )
 
 
+ASSIST_SYSTEM_PROMPT = (
+    "You are a friendly coding copilot inside a Skill Playground. The user is "
+    "learning to BUILD SKILLS, not to code — so do the Python for them and keep "
+    "things simple and encouraging. You help write and debug the small Python "
+    "script for a skill and keep its YAML frontmatter (especially input_schema) "
+    "in sync with the script.\n\n"
+    "The script contract is strict and always the same:\n"
+    "- Read ONE JSON object from stdin (the arguments; keys match input_schema).\n"
+    "- Print ONE JSON object to stdout (the result).\n"
+    "- Exit 0 on success. On error, print a short message to stderr and exit non-zero.\n"
+    "- Use only the Python standard library. Keep it short and readable.\n\n"
+    "When you give code, ALWAYS output the COMPLETE file in a single fenced block "
+    "so it can replace the editor contents — never a partial snippet:\n"
+    "- Use a ```python block for the full script.\n"
+    "- Use a ```yaml block for the full frontmatter, but ONLY if you changed it "
+    "(e.g. adjusted input_schema or added a `script:` field).\n"
+    "Briefly explain, in plain language, what you did and why. Do not call any tools."
+)
+
+
+def run_assist(
+    model_id: str, instruction: str, frontmatter: str, script: str
+) -> Iterator[str]:
+    """Copilot for the skill editor. Streams an explanation plus full code blocks."""
+    model = get_model(model_id)
+    if model is None:
+        yield _sse({"type": "error", "message": f"Unknown model '{model_id}'."})
+        yield _sse({"type": "done"})
+        return
+
+    user_msg = (
+        "Here is my skill so far.\n\n"
+        f"Frontmatter (YAML):\n```yaml\n{frontmatter.strip() or '(empty)'}\n```\n\n"
+        f"Current script (Python):\n```python\n{script.strip() or '(empty)'}\n```\n\n"
+        f"My request: {instruction.strip() or 'Write the script described by the frontmatter.'}"
+    )
+
+    try:
+        session = make_session(model, ASSIST_SYSTEM_PROMPT)
+        session.add_user(user_msg)
+        for event in session.step([]):
+            if event["type"] == "thinking":
+                yield _sse({"type": "thinking_delta", "text": event["text"]})
+            else:
+                yield _sse({"type": "text_delta", "text": event["text"]})
+        yield _sse({"type": "final", "text": session.last_turn.text, "model": model.id})
+    except Exception as exc:  # noqa: BLE001
+        yield _sse({"type": "error", "message": f"{type(exc).__name__}: {exc}"})
+
+    yield _sse({"type": "done"})
+
+
 def run_explain(model_id: str, trace: list[dict], question: str) -> Iterator[str]:
     """Coach the user about a prior turn. No tools; just a streamed explanation."""
     model = get_model(model_id)

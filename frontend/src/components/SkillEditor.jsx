@@ -3,6 +3,7 @@ import yaml from "js-yaml";
 import { saveSkill, createSkill } from "../api.js";
 import CodeEditor from "./CodeEditor.jsx";
 import MarkdownPreview from "./MarkdownPreview.jsx";
+import AssistantPanel from "./AssistantPanel.jsx";
 
 function validateYaml(text) {
   try {
@@ -55,6 +56,7 @@ const TABS = [
   { id: "frontmatter", label: "Frontmatter", tag: "yaml" },
   { id: "instructions", label: "Instructions", tag: "markdown" },
   { id: "script", label: "Script", tag: "python" },
+  { id: "assistant", label: "✨ Assistant", tag: null },
   { id: "help", label: "Help", tag: null },
 ];
 
@@ -111,7 +113,7 @@ function HelpTab() {
   );
 }
 
-export default function SkillEditor({ skill, onClose, onSaved }) {
+export default function SkillEditor({ skill, models = [], defaultModel, onClose, onSaved }) {
   const creating = !skill;
   const [tab, setTab] = useState("frontmatter");
   const [folder, setFolder] = useState(creating ? "my-skill" : skill.folder);
@@ -262,6 +264,23 @@ export default function SkillEditor({ skill, onClose, onSaved }) {
                 <CodeEditor value={scriptSource} onChange={setScriptSource} language="python" height="100%" />
               </div>
             </>
+          )}
+
+          {tab === "assistant" && (
+            <AssistantPanel
+              frontmatter={frontmatter}
+              script={scriptSource}
+              models={models}
+              defaultModel={defaultModel}
+              onApplyScript={(code) => {
+                setScriptSource(code);
+                setTab("script");
+              }}
+              onApplyFrontmatter={(yml) => {
+                setFrontmatter(yml);
+                setTab("frontmatter");
+              }}
+            />
           )}
 
           {tab === "help" && <HelpTab />}

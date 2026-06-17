@@ -28,6 +28,24 @@ export default function App() {
   const [showInstructions, setShowInstructions] = useState(false);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [rightWidth, setRightWidth] = useState(420);
+
+  function startRightResize(e) {
+    e.preventDefault();
+    const onMove = (ev) => {
+      const w = window.innerWidth - ev.clientX;
+      const max = Math.round(window.innerWidth * 0.7);
+      setRightWidth(Math.min(Math.max(w, 320), max));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      document.body.classList.remove("resizing");
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    document.body.classList.add("resizing");
+  }
 
   async function loadSkills() {
     const s = await getSkills();
@@ -151,7 +169,7 @@ export default function App() {
       className="app"
       style={{
         gridTemplateColumns: `${leftCollapsed ? "40px" : "290px"} 1fr ${
-          rightCollapsed ? "40px" : "420px"
+          rightCollapsed ? "40px" : `${rightWidth}px`
         }`,
       }}
     >
@@ -206,6 +224,13 @@ export default function App() {
           onSend={send}
           onExplain={(t) => setExplainTurn(t)}
         />
+        {!rightCollapsed && (
+          <div
+            className="resizer right-resizer"
+            onMouseDown={startRightResize}
+            title="Drag to resize the trace panel"
+          />
+        )}
       </main>
 
       <aside className={"right" + (rightCollapsed ? " collapsed" : "")}>
@@ -237,6 +262,8 @@ export default function App() {
       {editorSkill !== undefined && (
         <SkillEditor
           skill={editorSkill}
+          models={models}
+          defaultModel={model}
           onClose={() => setEditorSkill(undefined)}
           onSaved={loadSkills}
         />
