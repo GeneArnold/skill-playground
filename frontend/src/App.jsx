@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getModels, getSkills, streamChat } from "./api.js";
 import ModelPicker from "./components/ModelPicker.jsx";
 import SkillsSidebar from "./components/SkillsSidebar.jsx";
@@ -21,6 +21,7 @@ export default function App() {
   const [selectedTurnId, setSelectedTurnId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [highlight, setHighlight] = useState(null);
+  const abortRef = useRef(null);
 
   const [editorSkill, setEditorSkill] = useState(undefined); // undefined=closed, null=new
   const [explainTurn, setExplainTurn] = useState(null);
@@ -103,6 +104,9 @@ export default function App() {
     setSelectedTurnId(id);
     setBusy(true);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const enabledNames = [...enabled];
     try {
       await streamChat(model, enabledNames, history, (e) => {
@@ -145,13 +149,23 @@ export default function App() {
           default:
             break;
         }
-      });
+      }, controller.signal);
     } catch (err) {
-      updateTurn(id, (t) => ({ ...t, error: String(err.message || err), status: "error" }));
+      if (err.name === "AbortError") {
+        // User clicked Stop — keep whatever streamed so far, mark as stopped.
+        updateTurn(id, (t) => ({ ...t, status: "stopped" }));
+      } else {
+        updateTurn(id, (t) => ({ ...t, error: String(err.message || err), status: "error" }));
+      }
     } finally {
+      abortRef.current = null;
       setBusy(false);
       setHighlight(null);
     }
+  }
+
+  function stop() {
+    if (abortRef.current) abortRef.current.abort();
   }
 
   function newChat() {
@@ -222,6 +236,7 @@ export default function App() {
           turns={turns}
           busy={busy}
           onSend={send}
+          onStop={stop}
           onExplain={(t) => setExplainTurn(t)}
         />
         {!rightCollapsed && (

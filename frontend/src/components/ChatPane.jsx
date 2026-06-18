@@ -64,7 +64,7 @@ function ToolCards({ events }) {
   );
 }
 
-export default function ChatPane({ turns, busy, onSend, onExplain }) {
+export default function ChatPane({ turns, busy, onSend, onStop, onExplain }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
 
@@ -114,6 +114,7 @@ export default function ChatPane({ turns, busy, onSend, onExplain }) {
                   {t.assistantText || (t.status === "streaming" ? "…" : "")}
                 </div>
                 {t.error && <div className="error-box">{t.error}</div>}
+                {t.status === "stopped" && <div className="stopped-note">■ stopped</div>}
                 {t.status !== "streaming" && (
                   <button className="link tiny explain" onClick={() => onExplain(t)}>
                     💡 Explain why
@@ -133,12 +134,18 @@ export default function ChatPane({ turns, busy, onSend, onExplain }) {
             if (e.key === "Enter" && !e.shiftKey) submit(e);
           }}
           placeholder={busy ? "Working…" : "Send a message (Enter to send, Shift+Enter for newline)"}
-          rows={2}
+          rows={4}
           disabled={busy}
         />
-        <button type="submit" className="primary" disabled={busy || !input.trim()}>
-          Send
-        </button>
+        {busy ? (
+          <button type="button" className="stop-btn" onClick={onStop}>
+            ■ Stop
+          </button>
+        ) : (
+          <button type="submit" className="primary" disabled={!input.trim()}>
+            Send
+          </button>
+        )}
       </form>
     </div>
   );

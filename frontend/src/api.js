@@ -47,11 +47,13 @@ export async function createSkill(folder, skillMd, scriptSource) {
 }
 
 // Streams a POST SSE endpoint, invoking onEvent(parsedJson) for each event.
-async function streamSSE(url, body, onEvent) {
+// Pass an optional AbortSignal to allow cancelling the request mid-stream.
+async function streamSSE(url, body, onEvent, signal) {
   const resp = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal,
   });
   if (!resp.ok || !resp.body) {
     throw new Error(`request failed: ${resp.status}`);
@@ -80,8 +82,8 @@ async function streamSSE(url, body, onEvent) {
   }
 }
 
-export function streamChat(model, enabledSkills, messages, onEvent) {
-  return streamSSE("/api/chat", { model, enabled_skills: enabledSkills, messages }, onEvent);
+export function streamChat(model, enabledSkills, messages, onEvent, signal) {
+  return streamSSE("/api/chat", { model, enabled_skills: enabledSkills, messages }, onEvent, signal);
 }
 
 export function streamExplain(model, trace, question, onEvent) {

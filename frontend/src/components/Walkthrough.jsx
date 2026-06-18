@@ -267,6 +267,19 @@ export default function Walkthrough({ turn, onExit }) {
         ))}
       </div>
 
+      <div className="walk-nav">
+        <button className="secondary" disabled={clamped === 0} onClick={() => setI(clamped - 1)}>
+          ‹ Back
+        </button>
+        <button
+          className="primary"
+          disabled={clamped === steps.length - 1}
+          onClick={() => setI(clamped + 1)}
+        >
+          Next ›
+        </button>
+      </div>
+
       <div className="walk-card">
         <div className="walk-title">{s.icon} {s.title}</div>
         <p className="walk-explain">{s.explanation}</p>
@@ -283,19 +296,6 @@ export default function Walkthrough({ turn, onExit }) {
         <div className="walk-tokens">
           Context size: ~{fmtTokens(s.tokens)} tokens {s.grew && <span className="up">↑</span>}
         </div>
-      </div>
-
-      <div className="walk-nav">
-        <button className="secondary" disabled={clamped === 0} onClick={() => setI(clamped - 1)}>
-          ‹ Back
-        </button>
-        <button
-          className="primary"
-          disabled={clamped === steps.length - 1}
-          onClick={() => setI(clamped + 1)}
-        >
-          Next ›
-        </button>
       </div>
     </div>
   );
