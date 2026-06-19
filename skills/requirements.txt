@@ -1,0 +1,13 @@
+# Extra Python packages your SKILLS need (beyond the standard library).
+#
+# Skill scripts run with the same Python that runs the backend, so any package
+# listed here is importable from your scripts.
+#
+#   • Local (./run.sh):  these are pip-installed into backend/.venv on launch.
+#   • Docker:            these are pip-installed into the image at build time.
+#
+# Add one package per line, e.g.:
+#   requests
+#   beautifulsoup4
+#
+# (The seed skills use only the standard library, so this file starts empty.)

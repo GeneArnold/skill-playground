@@ -1,0 +1,23 @@
+services:
+  skill-playground:
+    build: .
+    image: skill-playground
+    ports:
+      - "8000:8000"
+    # API keys (optional — local Ollama models need no key). Won't error if absent.
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      # Reach an Ollama server running on the HOST machine from inside the container.
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
+    extra_hosts:
+      # Lets host.docker.internal resolve on Linux (already works on Mac/Windows).
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Edit/persist skills from the host; new skill folders show up live.
+      - ./skills:/app/skills
+      # File-writing skills (e.g. local_document) should write under /app/documents
+      # so the files land here on your host.
+      - ./documents:/app/documents
+    restart: unless-stopped

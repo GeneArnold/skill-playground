@@ -11,6 +11,10 @@ if [ ! -d .venv ]; then
   python3 -m venv .venv
   .venv/bin/pip install -q -r requirements.txt
 fi
+# Install any extra libraries your skills declare (cheap no-op if up to date).
+if [ -f "$ROOT/skills/requirements.txt" ]; then
+  .venv/bin/pip install -q -r "$ROOT/skills/requirements.txt"
+fi
 if [ ! -f .env ]; then
   echo "No backend/.env found — copying from .env.example. Add your API keys!"
   cp .env.example .env

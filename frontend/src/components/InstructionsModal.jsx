@@ -35,7 +35,7 @@ export default function InstructionsModal({ onClose, onSaved }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal instructions large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h3>📝 Instructions (base system prompt)</h3>

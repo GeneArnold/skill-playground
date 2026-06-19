@@ -1,0 +1,11 @@
+# keep the build context small and free of host-only / secret files
+.git
+**/__pycache__
+**/*.pyc
+backend/.venv
+backend/.env
+backend/system_instructions.txt
+frontend/node_modules
+frontend/dist
+documents
+.DS_Store

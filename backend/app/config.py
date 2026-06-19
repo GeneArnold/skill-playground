@@ -22,3 +22,8 @@ SCRIPT_TIMEOUT_SECONDS = int(os.getenv("SCRIPT_TIMEOUT_SECONDS", "10"))
 
 # Where the editable base system prompt ("Instructions") is stored.
 INSTRUCTIONS_FILE = _BACKEND_DIR / "system_instructions.txt"
+
+# Built frontend to serve in production / Docker (in dev, Vite serves it instead).
+FRONTEND_DIST = Path(
+    os.getenv("FRONTEND_DIST", str(_BACKEND_DIR.parent / "frontend" / "dist"))
+).resolve()

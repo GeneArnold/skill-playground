@@ -18,3 +18,7 @@ frontend/dist/
 
 # local_document skill test output
 backend/short_story.txt
+
+# Docker: host-mounted output from file-writing skills (keep the folder)
+documents/*
+!documents/.gitkeep

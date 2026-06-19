@@ -119,6 +119,14 @@ _CATALOG = [
         exposes_thinking=True,
         local=True,
     ),
+    ModelInfo(
+        id="gemma4:e2b",
+        label="GEMMA4:e2b (local, reasoning)",
+        provider="openai_compat",
+        tier="smart",
+        exposes_thinking=True,
+        local=True,
+    ),
 ]
 
 

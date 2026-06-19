@@ -156,7 +156,7 @@ export default function SkillEditor({ skill, models = [], defaultModel, onClose,
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal editor large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h3>{creating ? "New skill" : `Edit: ${skill.name}`}</h3>

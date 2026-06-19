@@ -23,7 +23,7 @@ export default function ExplainModal({ turn, models, defaultModel, onClose }) {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal explain" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h3>Ask the model why it did that</h3>

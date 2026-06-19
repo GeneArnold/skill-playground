@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import config, instructions as instructions_mod, skills as skills_mod
@@ -181,3 +182,10 @@ def create_skill(body: SkillCreate):
             (target / script_name).write_text(body.script_source)
     saved = skills_mod.get_skill_by_folder(body.folder)
     return saved.to_public() if saved else {"folder": body.folder}
+
+
+# ---------- static frontend (production / Docker) ----------
+# Mounted LAST so it never shadows the /api routes above. In local dev this
+# directory doesn't exist and Vite serves the UI instead.
+if config.FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=str(config.FRONTEND_DIST), html=True), name="frontend")

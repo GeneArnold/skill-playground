@@ -291,7 +291,7 @@ export default function HelpModal({ onClose }) {
   const section = SECTIONS.find((s) => s.id === active);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="modal help" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <h3>📖 How skills work</h3>
